@@ -26,7 +26,16 @@
     
 import { Sequelize } from "sequelize";
 
-export const sequelize = new Sequelize("Rektadb", "root", "", {
-  host: "localhost",
-  dialect: "mysql"
-});
+// Connection settings come from environment variables so credentials are
+// never committed. Defaults match the local XAMPP/Laragon setup.
+export const sequelize = new Sequelize(
+  process.env.DB_NAME || "Rektadb",
+  process.env.DB_USER || "root",
+  process.env.DB_PASS || "",
+  {
+    host: process.env.DB_HOST || "localhost",
+    port: Number(process.env.DB_PORT) || 3306,
+    dialect: "mysql",
+    logging: process.env.DB_LOGGING === "true" ? console.log : false,
+  }
+);

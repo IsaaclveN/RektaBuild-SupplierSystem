@@ -9,7 +9,9 @@ import {
 } from "./models/index.js";
 import inquirer from "inquirer";
 
-const rootSequelize = new Sequelize("mysql://root:@localhost:3306/");
+const rootSequelize = new Sequelize("mysql://root:@localhost:3306/", {
+  logging: process.env.DB_LOGGING === "true" ? console.log : false,
+});
 
 const { createDb } = await inquirer.prompt([
   {
