@@ -1,0 +1,234 @@
+{{> head}}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter">
+  <div class="page-header">
+    <div>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <h1 class="page-title">Dashboard</h1>
+        <span id="currentDateBadge" class="badge badge-slate"></span>
+      </div>
+      <p class="page-subtitle">Overview of your suppliers, sourcing catalog, purchase orders, and receiving.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <a href="/suppliers/new" class="btn btn-secondary">+ New Supplier</a>
+      <a href="/orders/new" class="btn btn-primary">+ New Purchase Order</a>
+    </div>
+  </div>
+
+  <section class="kpi-grid">
+    <a href="/suppliers" class="kpi-card" style="--kpi-accent: #0D9488;">
+      <div class="kpi-top">
+        <span class="kpi-label">Suppliers</span>
+        <span class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+        </span>
+      </div>
+      <span class="kpi-value" data-counter="{{stats.supplierCount}}">{{stats.supplierCount}}</span>
+      <span class="kpi-meta">Registered organizations</span>
+    </a>
+
+    <a href="/products" class="kpi-card" style="--kpi-accent: #14B8A6;">
+      <div class="kpi-top">
+        <span class="kpi-label">Products</span>
+        <span class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg>
+        </span>
+      </div>
+      <span class="kpi-value" data-counter="{{stats.productCount}}">{{stats.productCount}}</span>
+      <span class="kpi-meta">In catalog</span>
+    </a>
+
+    <a href="/product-sources" class="kpi-card" style="--kpi-accent: #0284C7;">
+      <div class="kpi-top">
+        <span class="kpi-label">Product Sources</span>
+        <span class="kpi-icon" style="background: rgba(2,132,199,0.12); color: #0284C7;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </span>
+      </div>
+      <span class="kpi-value" data-counter="{{stats.sourceCount}}">{{stats.sourceCount}}</span>
+      <span class="kpi-meta">Supplier–product links</span>
+    </a>
+
+    <a href="/orders" class="kpi-card" style="--kpi-accent: #D97706;">
+      <div class="kpi-top">
+        <span class="kpi-label">Open Orders</span>
+        <span class="kpi-icon" style="background: var(--badge-amber-bg); color: var(--badge-amber-text);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        </span>
+      </div>
+      <span class="kpi-value" data-counter="{{stats.openOrderCount}}" style="color: var(--badge-amber-text);">{{stats.openOrderCount}}</span>
+      <span class="kpi-meta">Pending / in transit</span>
+    </a>
+
+    <a href="/receipts" class="kpi-card" style="--kpi-accent: #059669;">
+      <div class="kpi-top">
+        <span class="kpi-label">Receipts</span>
+        <span class="kpi-icon" style="background: var(--badge-green-bg); color: var(--badge-green-text);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/></svg>
+        </span>
+      </div>
+      <span class="kpi-value" data-counter="{{stats.receiptCount}}" style="color: var(--badge-green-text);">{{stats.receiptCount}}</span>
+      <span class="kpi-meta">Deliveries received</span>
+    </a>
+  </section>
+
+  <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    <div class="card overflow-hidden">
+      <div class="card-header">
+        <h2 class="card-title">Recent Purchase Orders</h2>
+        <a href="/orders" class="text-xs text-link">View all &rarr;</a>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>PO #</th>
+              <th>Supplier</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th class="text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each recentOrders}}
+            <tr>
+              <td><a href="/orders/{{id}}" class="mono text-link">{{orderNumber}}</a></td>
+              <td class="font-medium">{{supplier.name}}</td>
+              <td><span class="badge {{statusClass status}}">{{status}}</span></td>
+              <td style="color: var(--text-secondary);">{{formatDate dateOrdered}}</td>
+              <td class="text-right"><a href="/orders/{{id}}" class="btn btn-ghost btn-sm">Open</a></td>
+            </tr>
+            {{else}}
+            <tr>
+              <td colspan="5">
+                <div class="empty-state">
+                  <div class="empty-state-title">No purchase orders yet</div>
+                  <div class="empty-state-desc">Create a purchase order to begin tracking supplier deliveries.</div>
+                </div>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card overflow-hidden">
+      <div class="card-header">
+        <h2 class="card-title">Recent Receipts</h2>
+        <a href="/receipts" class="text-xs text-link">View all &rarr;</a>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Receipt #</th>
+              <th>Supplier</th>
+              <th>Date Received</th>
+              <th class="text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each recentReceipts}}
+            <tr>
+              <td><a href="/receipts/{{id}}" class="mono text-link">{{receiptNumber}}</a></td>
+              <td class="font-medium">{{order.supplier.name}}</td>
+              <td style="color: var(--text-secondary);">{{formatDate dateReceived}}</td>
+              <td class="text-right"><a href="/receipts/{{id}}" class="btn btn-ghost btn-sm">Open</a></td>
+            </tr>
+            {{else}}
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">
+                  <div class="empty-state-title">No receipts yet</div>
+                  <div class="empty-state-desc">When you receive products from placed orders, they will appear here.</div>
+                </div>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+    <div class="card card-glass lg:col-span-2">
+      <div class="card-header flex-wrap">
+        <div>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <h2 class="card-title">System Overview</h2>
+            <span id="chartTotals" class="badge badge-teal"></span>
+          </div>
+          <div id="chartLegend" class="mt-0.5 flex items-center gap-4"></div>
+        </div>
+        <div class="range-pills" role="group" aria-label="Analytics range">
+          <button type="button" class="range-pill is-active" data-chart-range="summary">Summary</button>
+          <button type="button" class="range-pill" data-chart-range="7">7D</button>
+          <button type="button" class="range-pill" data-chart-range="30">30D</button>
+          <button type="button" class="range-pill" data-chart-range="90">90D</button>
+          <button type="button" class="range-pill" data-chart-range="365">12M</button>
+        </div>
+      </div>
+      <div class="card-body relative">
+        <div id="platformOverviewChart" data-analytics='{{{analyticsJson}}}'>
+          <div class="skeleton h-44 w-full"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-glass flex flex-col">
+      <div class="card-header">
+        <h2 class="card-title">Order Status Distribution</h2>
+      </div>
+      <div class="card-body relative flex-1 flex items-center justify-center">
+        <div id="poStatusDonut" class="w-full" data-analytics='{{{analyticsJson}}}'>
+          <div class="skeleton h-40 w-full"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card card-glass">
+    <div class="card-header">
+      <h2 class="card-title">Quick Actions</h2>
+    </div>
+    <div class="card-body grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <a href="/orders/new" class="quick-tile">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg></span>
+          <span class="text-xs font-medium leading-tight">Create Purchase Order</span>
+        </div>
+        <span class="quick-tile-arrow text-xs">&rarr;</span>
+      </a>
+
+      <a href="/suppliers/new" class="quick-tile">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg></span>
+          <span class="text-xs font-medium leading-tight">Add Supplier</span>
+        </div>
+        <span class="quick-tile-arrow text-xs">&rarr;</span>
+      </a>
+
+      <a href="/products/new" class="quick-tile">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/></svg></span>
+          <span class="text-xs font-medium leading-tight">Add Product</span>
+        </div>
+        <span class="quick-tile-arrow text-xs">&rarr;</span>
+      </a>
+
+      <a href="/product-sources/new" class="quick-tile">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
+          <span class="text-xs font-medium leading-tight">Link Product Source</span>
+        </div>
+        <span class="quick-tile-arrow text-xs">&rarr;</span>
+      </a>
+    </div>
+  </section>
+</main>
+
+{{> footer }}

@@ -1,0 +1,62 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter max-w-4xl">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Receipt <span class="mono">{{receipt.receiptNumber}}</span></h1>
+      <p class="page-subtitle">
+        Order <a href="/orders/{{receipt.order.id}}" class="mono text-link">{{receipt.order.orderNumber}}</a>
+        · {{receipt.order.supplier.name}}
+        · Received {{#if receipt.receivedBy.name}}by {{receipt.receivedBy.name}}{{/if}} on {{formatDate receipt.dateReceived}}
+        {{#if receipt.shipmentNumber}} · Shipment #{{receipt.shipmentNumber}}{{/if}}
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="/receipts/{{receipt.id}}/print" class="btn btn-primary">Print / PDF</a>
+      <a href="/receipts" class="btn btn-secondary">Back to Receipts</a>
+    </div>
+  </div>
+
+  {{#if receipt.comments}}
+  <div class="card mb-4">
+    <div class="card-body text-sm" style="color: var(--text-secondary);">{{receipt.comments}}</div>
+  </div>
+  {{/if}}
+
+  <div class="card overflow-hidden">
+    <div class="card-header">
+      <h2 class="card-title">Received Items</h2>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Qty Accepted</th>
+            <th>Qty Rejected</th>
+            <th>Inspection</th>
+            <th>Quality / Item Comment</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each receipt.items}}
+          <tr>
+            <td>
+              <span class="mono" style="color: var(--text-muted);">{{product.productCode}}</span>
+              <span class="font-medium ml-1">{{product.name}}</span>
+            </td>
+            <td class="font-medium">{{quantityReceived}}</td>
+            <td class="font-medium" style="color: {{#if quantityRejected}}#dc2626{{else}}var(--text-muted){{/if}};">{{quantityRejected}}</td>
+            <td><span class="badge {{inspectClass inspectionStatus}}">{{inspectionStatus}}</span></td>
+            <td style="color: var(--text-secondary);">{{#if comment}}{{comment}}{{else}}—{{/if}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+{{> footer }}

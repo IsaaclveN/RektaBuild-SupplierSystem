@@ -1,0 +1,76 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Suppliers</h1>
+      <p class="page-subtitle">Manage supplier organizations, roles, and active statuses.</p>
+    </div>
+    <a href="/suppliers/new" class="btn btn-primary">+ New Supplier</a>
+  </div>
+
+  <div class="card overflow-hidden">
+    <div class="table-toolbar">
+      <div class="flex flex-wrap items-center gap-2 flex-1">
+        <input type="text" data-table-search class="form-control" style="max-width: 280px;" placeholder="Search by code or name..." />
+        <select data-table-filter class="form-control" style="max-width: 160px;">
+          <option value="">All statuses</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table" data-table data-page-size="10">
+        <thead>
+          <tr>
+            <th data-sort>Code</th>
+            <th data-sort>Name</th>
+            <th data-sort>Role</th>
+            <th data-sort>Terms</th>
+            <th data-sort>Accreditation</th>
+            <th data-sort>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each suppliers}}
+          <tr data-row data-filter="{{#if active}}active{{else}}inactive{{/if}}">
+            <td class="mono">{{code}}</td>
+            <td><a href="/suppliers/{{id}}" class="text-link">{{name}}</a></td>
+            <td class="capitalize" style="color: var(--text-secondary);">{{role}}</td>
+            <td style="color: var(--text-secondary);">{{#if paymentTerms}}{{paymentTerms}}{{else}}Net 30{{/if}}</td>
+            <td><span class="badge {{accredClass accreditationStatus}}">{{accreditationStatus}}</span></td>
+            <td>
+              {{#if active}}<span class="badge badge-green">Active</span>
+              {{else}}<span class="badge badge-red">Inactive</span>{{/if}}
+            </td>
+            <td class="text-right">
+              <div class="inline-flex items-center gap-2">
+                <a href="/suppliers/{{id}}" class="btn btn-ghost btn-sm">View</a>
+                <a href="/suppliers/{{id}}/edit" class="btn btn-secondary btn-sm">Edit</a>
+              </div>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <div class="empty-state-title">No suppliers yet</div>
+                <div class="empty-state-desc">Add your first supplier organization to start managing sourcing and orders.</div>
+              </div>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar" data-table-pagination></div>
+  </div>
+</main>
+
+{{> footer }}

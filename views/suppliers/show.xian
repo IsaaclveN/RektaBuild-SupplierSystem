@@ -1,0 +1,190 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter">
+  <div class="page-header">
+    <div>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <h1 class="page-title">{{supplier.name}}</h1>
+        <span class="mono badge badge-slate">{{supplier.code}}</span>
+        {{#if supplier.active}}<span class="badge badge-green">Active</span>{{else}}<span class="badge badge-red">Inactive</span>{{/if}}
+        <span class="badge {{accredClass supplier.accreditationStatus}}">{{supplier.accreditationStatus}}</span>
+      </div>
+      <p class="page-subtitle capitalize">Role: {{supplier.role}} · Terms: {{#if supplier.paymentTerms}}{{supplier.paymentTerms}}{{else}}Net 30{{/if}}</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="/suppliers/{{supplier.id}}/edit" class="btn btn-secondary">Edit</a>
+      <form method="POST" action="/suppliers/{{supplier.id}}/toggle">
+        {{#if supplier.active}}
+        <button type="submit" class="btn btn-danger">Deactivate</button>
+        {{else}}
+        <button type="submit" class="btn btn-success">Activate</button>
+        {{/if}}
+      </form>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+      <div>
+        <span class="form-label mb-0">TIN</span>
+        <span class="mono">{{#if supplier.tin}}{{supplier.tin}}{{else}}—{{/if}}</span>
+      </div>
+      <div>
+        <span class="form-label mb-0">Payment Terms</span>
+        <span>{{#if supplier.paymentTerms}}{{supplier.paymentTerms}}{{else}}Net 30{{/if}}</span>
+      </div>
+      <div>
+        <span class="form-label mb-0">Permit Expiry</span>
+        <span>{{formatDate supplier.permitExpiry}}</span>
+      </div>
+      <div>
+        <span class="form-label mb-0">Contact</span>
+        <span>{{#if supplier.contactPerson}}{{supplier.contactPerson}}{{else}}—{{/if}}{{#if supplier.contactPhone}} · {{supplier.contactPhone}}{{/if}}</span>
+      </div>
+      {{#if supplier.description}}
+      <div class="col-span-2 sm:col-span-4 pt-2 border-t" style="border-color: var(--border-color); color: var(--text-secondary);">
+        {{supplier.description}}
+      </div>
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h2 class="card-title">Supplier Performance</h2>
+      <span class="badge {{gradeClass performance.grade}}">{{performance.grade}}</span>
+    </div>
+    <div class="card-body grid grid-cols-2 sm:grid-cols-4 gap-5 text-sm">
+      <div>
+        <span class="form-label">On-Time Delivery</span>
+        <span class="font-semibold">{{#if performance.deliveries}}{{performance.onTimeRate}}%{{else}}—{{/if}}</span>
+        <div class="text-xs" style="color: var(--text-muted);">{{performance.onTimeDeliveries}} of {{performance.deliveries}} deliveries</div>
+      </div>
+      <div>
+        <span class="form-label">Quality Acceptance</span>
+        <span class="font-semibold">{{#if performance.deliveries}}{{performance.qualityRate}}%{{else}}—{{/if}}</span>
+        <div class="text-xs" style="color: var(--text-muted);">{{performance.rejectedQty}} rejected of {{performance.acceptedQty}} accepted</div>
+      </div>
+      <div>
+        <span class="form-label">Purchase Orders</span>
+        <span class="font-semibold">{{performance.totalOrders}}</span>
+        <div class="text-xs" style="color: var(--text-muted);">{{performance.openOrders}} open · {{performance.completedOrders}} received</div>
+      </div>
+      <div>
+        <span class="form-label">Total Deliveries</span>
+        <span class="font-semibold">{{performance.deliveries}}</span>
+        <div class="text-xs" style="color: var(--text-muted);">Based on recorded receipts</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="card overflow-hidden">
+      <div class="card-header">
+        <h2 class="card-title">Locations &amp; Addresses</h2>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Address</th>
+              <th class="text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each supplier.locations}}
+            <tr>
+              <td class="font-medium">{{name}}</td>
+              <td style="color: var(--text-muted);">{{locationType}}</td>
+              <td style="color: var(--text-secondary);">{{address1}} {{address2}}, {{city}} {{stateOrProvince}} {{postalCode}} {{country}}</td>
+              <td class="text-right">
+                <form method="POST" action="/suppliers/{{../supplier.id}}/locations/{{id}}/delete" data-confirm="Remove this location?">
+                  <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                </form>
+              </td>
+            </tr>
+            {{else}}
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">
+                  <div class="empty-state-title">No locations yet</div>
+                  <div class="empty-state-desc">Add an address or warehouse location below.</div>
+                </div>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+      <form method="POST" action="/suppliers/{{supplier.id}}/locations" class="card-body border-t grid grid-cols-1 sm:grid-cols-2 gap-3" style="border-color: var(--border-color);" novalidate>
+        <div>
+          <input name="name" class="form-control" placeholder="Location name *" required />
+          <div class="form-error">Location name is required.</div>
+        </div>
+        <div>
+          <input name="locationType" class="form-control" placeholder="Type (e.g. Warehouse)" />
+        </div>
+        <div class="sm:col-span-2">
+          <input name="address1" class="form-control" placeholder="Address line 1" />
+        </div>
+        <div class="sm:col-span-2">
+          <input name="address2" class="form-control" placeholder="Address line 2" />
+        </div>
+        <input name="city" class="form-control" placeholder="City" />
+        <input name="stateOrProvince" class="form-control" placeholder="State / Province" />
+        <input name="postalCode" class="form-control" placeholder="Postal code" />
+        <input name="country" class="form-control" placeholder="Country" />
+        <div class="sm:col-span-2">
+          <button type="submit" class="btn btn-primary w-full">+ Add Location</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card overflow-hidden self-start">
+      <div class="card-header">
+        <h2 class="card-title">Product Sources</h2>
+        <a href="/product-sources/new" class="text-xs text-link">+ Add source</a>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Supplier Code</th>
+              <th>Grade</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each supplier.productSources}}
+            <tr>
+              <td><a href="/product-sources/{{id}}" class="text-link">{{product.name}}</a></td>
+              <td class="mono">{{supplierCode}}</td>
+              <td><span class="badge {{gradeClass performance.grade}}">{{performance.grade}}</span></td>
+              <td>
+                {{#if active}}<span class="badge badge-green">Active</span>
+                {{else}}<span class="badge badge-red">Inactive</span>{{/if}}
+              </td>
+            </tr>
+            {{else}}
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">
+                  <div class="empty-state-title">No product sources</div>
+                  <div class="empty-state-desc">Link products to this supplier under Product Sources.</div>
+                </div>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+{{> footer }}

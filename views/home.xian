@@ -1,0 +1,11 @@
+{{> head}}
+<body>
+  <div class="flex flex-col items-center justify-center flex-1 px-4 py-12 text-center">
+    <div class="inline-flex items-center gap-2 mb-2">
+      <span class="app-brand-mark">R</span>
+      <span class="text-xl font-semibold" style="color: var(--text-primary);">RektaBuild</span>
+    </div>
+    <p class="text-sm mb-6" style="color: var(--text-muted);">Enterprise Supplier Management System</p>
+    <a href="/dashboard" class="btn btn-primary">Open Dashboard</a>
+  </div>
+{{> footer }}

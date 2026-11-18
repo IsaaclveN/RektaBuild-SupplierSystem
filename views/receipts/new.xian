@@ -1,0 +1,71 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter max-w-4xl">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Receive Order <span class="mono">{{order.orderNumber}}</span></h1>
+      <p class="page-subtitle">{{order.name}} · {{order.supplier.name}}</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <form class="card-body flex flex-col gap-5" method="POST" action="/orders/{{order.id}}/receive">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label" for="rcvShip">Shipment Number</label>
+          <input id="rcvShip" type="text" name="shipmentNumber" class="form-control" placeholder="e.g. SHP-001" />
+        </div>
+        <div>
+          <label class="form-label" for="rcvComments">Receipt Comments</label>
+          <input id="rcvComments" type="text" name="comments" class="form-control" placeholder="Delivery notes..." />
+        </div>
+      </div>
+
+      <div class="card overflow-hidden">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Ordered</th>
+                <th>Received</th>
+                <th>Remaining</th>
+                <th style="width: 115px;">Qty Accepted</th>
+                <th style="width: 115px;">Qty Rejected</th>
+                <th>Item Comment (quality)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each order.items}}
+              <tr>
+                <td>
+                  <span class="mono" style="color: var(--text-muted);">{{product.productCode}}</span>
+                  <span class="font-medium ml-1">{{product.name}}</span>
+                  <input type="hidden" name="orderItemId" value="{{id}}" />
+                </td>
+                <td>{{quantity}}</td>
+                <td>{{quantityReceived}}</td>
+                <td class="font-medium">{{remaining quantity quantityReceived}}</td>
+                <td><input type="number" name="quantityReceived" class="form-control" min="0" max="{{remaining quantity quantityReceived}}" value="0" /></td>
+                <td><input type="number" name="quantityRejected" class="form-control" min="0" value="0" /></td>
+                <td><input type="text" name="itemComment" class="form-control" placeholder="Condition / reject reason" /></td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="text-xs" style="color: var(--text-muted);">Partial receiving is supported — leave 0 for items not included in this delivery.</p>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success">Record Receipt</button>
+        <a href="/orders/{{order.id}}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</main>
+
+{{> footer }}

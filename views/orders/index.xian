@@ -1,0 +1,72 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Purchase Orders</h1>
+      <p class="page-subtitle">Create, approve, place, and track supplier purchase orders.</p>
+    </div>
+    <a href="/orders/new" class="btn btn-primary">+ New Purchase Order</a>
+  </div>
+
+  <div class="card overflow-hidden">
+    <div class="table-toolbar">
+      <div class="flex flex-wrap items-center gap-2 flex-1">
+        <input type="text" data-table-search class="form-control" style="max-width: 280px;" placeholder="Search order # or supplier..." />
+        <select data-table-filter class="form-control" style="max-width: 190px;">
+          <option value="">All statuses</option>
+          <option value="PENDING">PENDING</option>
+          <option value="APPROVED">APPROVED</option>
+          <option value="PLACED">PLACED</option>
+          <option value="PARTIALLY_RECEIVED">PARTIALLY_RECEIVED</option>
+          <option value="RECEIVED">RECEIVED</option>
+          <option value="CANCELLED">CANCELLED</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table" data-table data-page-size="10">
+        <thead>
+          <tr>
+            <th data-sort>Order #</th>
+            <th data-sort>Name</th>
+            <th data-sort>Supplier</th>
+            <th data-sort>Project Site</th>
+            <th data-sort>Expected Delivery</th>
+            <th data-sort>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each orders}}
+          <tr data-row data-filter="{{status}}">
+            <td><a href="/orders/{{id}}" class="mono text-link">{{orderNumber}}</a></td>
+            <td class="font-medium">{{name}}</td>
+            <td style="color: var(--text-secondary);">{{supplier.name}}</td>
+            <td style="color: var(--text-secondary);">{{#if projectSite}}{{projectSite}}{{else}}—{{/if}}</td>
+            <td style="color: var(--text-muted);">{{formatDate expectedDeliveryDate}}</td>
+            <td><span class="badge {{statusClass status}}">{{status}}</span></td>
+            <td class="text-right"><a href="/orders/{{id}}" class="btn btn-secondary btn-sm">View</a></td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <div class="empty-state-title">No purchase orders yet</div>
+                <div class="empty-state-desc">Create your first purchase order to start ordering from suppliers.</div>
+              </div>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar" data-table-pagination></div>
+  </div>
+</main>
+
+{{> footer }}

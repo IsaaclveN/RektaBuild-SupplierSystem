@@ -1,0 +1,57 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter max-w-2xl">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{#if product}}Edit Product{{else}}New Product{{/if}}</h1>
+      <p class="page-subtitle">Define product code, unit of measure, and category.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <form class="card-body flex flex-col gap-4" method="POST"
+          action="{{#if product}}/products/{{product.id}}{{else}}/products{{/if}}" novalidate>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label" for="prodCode">Product Code * <span class="font-normal" style="color: var(--text-muted);">(unique)</span></label>
+          <input id="prodCode" type="text" name="productCode" class="form-control" value="{{product.productCode}}" placeholder="e.g. MED-001" required />
+          <div class="form-error">Product code is required.</div>
+        </div>
+        <div>
+          <label class="form-label" for="prodUom">Unit of Measure</label>
+          <input id="prodUom" type="text" name="unitOfMeasure" class="form-control" value="{{product.unitOfMeasure}}" placeholder="EA" />
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label" for="prodName">Product Name *</label>
+        <input id="prodName" type="text" name="name" class="form-control" value="{{product.name}}" placeholder="e.g. Paracetamol 500mg" required />
+        <div class="form-error">Product name is required.</div>
+      </div>
+
+      <div>
+        <label class="form-label" for="prodCat">Category</label>
+        <input id="prodCat" type="text" name="category" class="form-control" value="{{product.category}}" placeholder="e.g. Pharmaceutical" />
+      </div>
+
+      <div>
+        <label class="form-label" for="prodDesc">Description</label>
+        <textarea id="prodDesc" name="description" rows="3" class="form-control">{{product.description}}</textarea>
+      </div>
+
+      <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+        <input type="checkbox" name="active" {{#if product}}{{#if product.active}}checked{{/if}}{{else}}checked{{/if}} />
+        <span>Active product</span>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Product</button>
+        <a href="/products" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</main>
+
+{{> footer }}

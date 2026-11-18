@@ -1,0 +1,96 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter max-w-3xl">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{#if source}}Edit Product Source{{else}}New Product Source{{/if}}</h1>
+      <p class="page-subtitle">Configure supplier-specific SKU, MOQ, lead time, and pricing terms.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <form class="card-body" method="POST"
+          action="{{#if source}}/product-sources/{{source.id}}{{else}}/product-sources{{/if}}" novalidate>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label" for="psProduct">Product *</label>
+          <select id="psProduct" name="productId" class="form-control" required>
+            {{#each products}}
+            <option value="{{id}}" {{#if (eq id ../source.productId)}}selected{{/if}}>{{productCode}} — {{name}}</option>
+            {{/each}}
+          </select>
+          <div class="form-error">Product is required.</div>
+        </div>
+        <div>
+          <label class="form-label" for="psSupplier">Supplier *</label>
+          <select id="psSupplier" name="supplierId" class="form-control" required>
+            {{#each suppliers}}
+            <option value="{{id}}" {{#if (eq id ../source.supplierId)}}selected{{/if}}>{{code}} — {{name}}</option>
+            {{/each}}
+          </select>
+          <div class="form-error">Supplier is required.</div>
+        </div>
+        <div>
+          <label class="form-label" for="psName">Source Name</label>
+          <input id="psName" type="text" name="name" class="form-control" value="{{source.name}}" />
+        </div>
+        <div>
+          <label class="form-label" for="psCode">Supplier Product Code</label>
+          <input id="psCode" type="text" name="supplierCode" class="form-control" value="{{source.supplierCode}}" />
+        </div>
+        <div>
+          <label class="form-label" for="psMfg">Manufacturer</label>
+          <input id="psMfg" type="text" name="manufacturer" class="form-control" value="{{source.manufacturer}}" />
+        </div>
+        <div>
+          <label class="form-label" for="psMfgCode">Manufacturer Code</label>
+          <input id="psMfgCode" type="text" name="manufacturerCode" class="form-control" value="{{source.manufacturerCode}}" />
+        </div>
+        <div>
+          <label class="form-label" for="psMoq">Min Order Quantity</label>
+          <input id="psMoq" type="number" name="minOrderQuantity" class="form-control" value="{{source.minOrderQuantity}}" min="0" />
+        </div>
+        <div>
+          <label class="form-label" for="psLead">Standard Lead Time (days)</label>
+          <input id="psLead" type="number" name="standardLeadTimeDays" class="form-control" value="{{source.standardLeadTimeDays}}" min="0" />
+        </div>
+        <div>
+          <label class="form-label" for="psPkgPrice">Package Price</label>
+          <input id="psPkgPrice" type="number" step="0.01" name="packagePrice" class="form-control" value="{{source.packagePrice}}" />
+        </div>
+        <div>
+          <label class="form-label" for="psContractPrice">Contract Price</label>
+          <input id="psContractPrice" type="number" step="0.01" name="contractPrice" class="form-control" value="{{source.contractPrice}}" />
+        </div>
+        <div>
+          <label class="form-label" for="psValidUntil">Contract Price Valid Until</label>
+          <input id="psValidUntil" type="date" name="contractPriceValidUntil" class="form-control" value="{{source.contractPriceValidUntil}}" />
+        </div>
+      </div>
+
+      <p class="text-xs mt-3" style="color: var(--text-muted);">
+        Supplier grade is computed automatically from delivery and quality history — no manual rating needed.
+      </p>
+
+      <div class="flex flex-wrap gap-6 mt-4">
+        <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+          <input type="checkbox" name="tieredPricing" {{#if source.tieredPricing}}checked{{/if}} />
+          <span>Tiered pricing</span>
+        </label>
+        <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+          <input type="checkbox" name="active" {{#if source}}{{#if source.active}}checked{{/if}}{{else}}checked{{/if}} />
+          <span>Active source</span>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Product Source</button>
+        <a href="/product-sources" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</main>
+
+{{> footer }}

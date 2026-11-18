@@ -1,0 +1,140 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter max-w-4xl">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">New Purchase Order</h1>
+      <p class="page-subtitle">Select a supplier and add line items. Sourcing terms auto-fill when available.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <form class="card-body flex flex-col gap-5" method="POST" action="/orders" novalidate>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label" for="orderName">Order Name *</label>
+          <input id="orderName" type="text" name="name" class="form-control" placeholder="e.g. Site A Rebar & Cement Batch 1" required />
+          <div class="form-error">Order name is required.</div>
+        </div>
+        <div>
+          <label class="form-label" for="supplierSelect">Supplier *</label>
+          <select name="supplierId" id="supplierSelect" class="form-control" required>
+            <option value="">— Select supplier —</option>
+            {{#each suppliers}}<option value="{{id}}" data-terms="{{paymentTerms}}">{{code}} — {{name}}</option>{{/each}}
+          </select>
+          <div class="form-error">Please select a supplier.</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="form-label" for="orderSite">Project / Delivery Site</label>
+          <input id="orderSite" type="text" name="projectSite" class="form-control" placeholder="e.g. Site A - Makati Tower" />
+        </div>
+        <div>
+          <label class="form-label" for="orderDue">Expected Delivery Date</label>
+          <input id="orderDue" type="date" name="expectedDeliveryDate" class="form-control" />
+        </div>
+        <div>
+          <label class="form-label" for="orderTerms">Payment Terms</label>
+          <input id="orderTerms" type="text" name="paymentTerms" class="form-control" placeholder="Auto-filled from supplier" />
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label" for="orderDesc">Description</label>
+        <textarea id="orderDesc" name="description" rows="2" class="form-control"></textarea>
+      </div>
+
+      <div>
+        <div class="flex justify-between items-center mb-2">
+          <span class="form-label mb-0">Line Items</span>
+          <button type="button" id="addItemBtn" class="btn btn-secondary btn-sm">+ Add Item</button>
+        </div>
+        <div class="card overflow-hidden">
+          <div class="table-wrap">
+            <table class="data-table" id="itemsTable">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th style="width: 110px;">Qty</th>
+                  <th style="width: 130px;">Unit Price</th>
+                  <th>Source Info</th>
+                  <th style="width: 80px;"></th>
+                </tr>
+              </thead>
+              <tbody id="itemsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label" for="orderComments">Comments</label>
+        <textarea id="orderComments" name="comments" rows="2" class="form-control"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Create Purchase Order</button>
+        <a href="/orders" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</main>
+
+<script>
+const products = [
+  {{#each products}}{ id: {{id}}, label: "{{productCode}} — {{name}}" },{{/each}}
+];
+const itemsBody = document.getElementById("itemsBody");
+let supplierSources = [];
+
+document.getElementById("supplierSelect").addEventListener("change", async (e) => {
+  const opt = e.target.selectedOptions[0];
+  const termsInput = document.getElementById("orderTerms");
+  if (opt && opt.dataset.terms && !termsInput.value) {
+    termsInput.value = opt.dataset.terms;
+  }
+  supplierSources = e.target.value
+    ? await (await fetch(`/api/suppliers/${e.target.value}/product-sources`)).json()
+    : [];
+  itemsBody.querySelectorAll("tr").forEach(fillSourceInfo);
+});
+
+function fillSourceInfo(row) {
+  const productId = row.querySelector('[name="productId"]').value;
+  const source = supplierSources.find(s => String(s.productId) === String(productId));
+  row.querySelector('[name="productSupplierId"]').value = source ? source.id : "";
+  const priceInput = row.querySelector('[name="unitPrice"]');
+  priceInput.value = source ? (source.contractPrice || source.packagePrice || "") : priceInput.value;
+  row.querySelector(".sourceInfo").textContent = source
+    ? `${source.supplierCode || "sourced"}${source.minOrderQuantity ? ` · MOQ ${source.minOrderQuantity}` : ""}${source.standardLeadTimeDays ? ` · ${source.standardLeadTimeDays}d lead` : ""}`
+    : "—";
+}
+
+function addRow() {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>
+      <select name="productId" class="form-control" required>
+        <option value="">— Select product —</option>
+        ${products.map(p => `<option value="${p.id}">${p.label}</option>`).join("")}
+      </select>
+      <input type="hidden" name="productSupplierId" />
+    </td>
+    <td><input type="number" name="quantity" min="1" class="form-control" required /></td>
+    <td><input type="number" name="unitPrice" step="0.01" min="0" class="form-control" /></td>
+    <td class="text-xs sourceInfo" style="color: var(--text-muted);">—</td>
+    <td class="text-right"><button type="button" class="btn btn-danger btn-sm removeBtn">Remove</button></td>`;
+  tr.querySelector('[name="productId"]').addEventListener("change", () => fillSourceInfo(tr));
+  tr.querySelector(".removeBtn").addEventListener("click", () => tr.remove());
+  itemsBody.appendChild(tr);
+}
+
+document.getElementById("addItemBtn").addEventListener("click", addRow);
+addRow();
+</script>
+
+{{> footer }}

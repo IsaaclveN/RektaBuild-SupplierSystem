@@ -1,0 +1,118 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter max-w-4xl">
+  <div class="page-header">
+    <div>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <h1 class="page-title">{{source.product.name}}</h1>
+        {{#if source.active}}<span class="badge badge-green">Active</span>{{else}}<span class="badge badge-red">Inactive</span>{{/if}}
+      </div>
+      <p class="page-subtitle">Supplied by {{source.supplier.name}}</p>
+    </div>
+    <a href="/product-sources/{{source.id}}/edit" class="btn btn-secondary">Edit Source</a>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h2 class="card-title">Sourcing &amp; Pricing Terms</h2>
+    </div>
+    <div class="card-body grid grid-cols-2 md:grid-cols-4 gap-5 text-sm">
+      <div>
+        <span class="form-label">Supplier Code</span>
+        <span class="mono">{{#if source.supplierCode}}{{source.supplierCode}}{{else}}—{{/if}}</span>
+      </div>
+      <div>
+        <span class="form-label">Manufacturer</span>
+        <span>{{#if source.manufacturer}}{{source.manufacturer}}{{else}}—{{/if}} {{#if source.manufacturerCode}}({{source.manufacturerCode}}){{/if}}</span>
+      </div>
+      <div>
+        <span class="form-label">Min Order Quantity</span>
+        <span>{{#if source.minOrderQuantity}}{{source.minOrderQuantity}}{{else}}—{{/if}}</span>
+      </div>
+      <div>
+        <span class="form-label">Lead Time</span>
+        <span>{{#if source.standardLeadTimeDays}}{{source.standardLeadTimeDays}} days{{else}}—{{/if}}</span>
+      </div>
+      <div>
+        <span class="form-label">Package Price</span>
+        <span class="font-medium">{{money source.packagePrice}}</span>
+      </div>
+      <div>
+        <span class="form-label">Contract Price</span>
+        <span class="font-medium">{{money source.contractPrice}}</span>
+        {{#if source.contractPriceValidUntil}}<div class="text-xs" style="color: var(--text-muted);">until {{formatDate source.contractPriceValidUntil}}</div>{{/if}}
+      </div>
+      <div>
+        <span class="form-label">Tiered Pricing</span>
+        <span>{{#if source.tieredPricing}}Yes{{else}}No{{/if}}</span>
+      </div>
+      <div>
+        <span class="form-label">Supplier Grade</span>
+        <span class="badge {{gradeClass source.performance.grade}}">{{source.performance.grade}}</span>
+        <div class="text-xs" style="color: var(--text-muted);">
+          {{#if source.performance.deliveries}}
+          {{source.performance.onTimeRate}}% on-time · {{source.performance.qualityRate}}% accepted
+          {{else}}
+          Computed after first delivery
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card overflow-hidden">
+    <div class="card-header">
+      <h2 class="card-title">Supplier Preferences</h2>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Valid From</th>
+            <th>Valid Until</th>
+            <th>Comments</th>
+            <th class="text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each source.preferences}}
+          <tr>
+            <td class="font-medium">{{preferenceType.name}}</td>
+            <td style="color: var(--text-muted);">{{formatDate validityStartDate}}</td>
+            <td style="color: var(--text-muted);">{{formatDate validityEndDate}}</td>
+            <td style="color: var(--text-secondary);">{{comments}}</td>
+            <td class="text-right">
+              <form method="POST" action="/product-sources/{{../source.id}}/preferences/{{id}}/delete" data-confirm="Remove this preference?">
+                <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <div class="empty-state-title">No preferences configured</div>
+                <div class="empty-state-desc">Assign a preference type (Preferred, Contract, Backup) below.</div>
+              </div>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+    <form method="POST" action="/product-sources/{{source.id}}/preferences" class="card-body border-t grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3" style="border-color: var(--border-color);" novalidate>
+      <select name="preferenceTypeId" class="form-control" required>
+        {{#each preferenceTypes}}<option value="{{id}}">{{name}}</option>{{/each}}
+      </select>
+      <input type="date" name="validityStartDate" class="form-control" title="Valid from" />
+      <input type="date" name="validityEndDate" class="form-control" title="Valid until" />
+      <input name="comments" class="form-control" placeholder="Comments" />
+      <button type="submit" class="btn btn-primary">+ Add Preference</button>
+    </form>
+  </div>
+</main>
+
+{{> footer }}

@@ -1,0 +1,69 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Products</h1>
+      <p class="page-subtitle">Product catalog items available for supplier sourcing and purchase orders.</p>
+    </div>
+    <a href="/products/new" class="btn btn-primary">+ New Product</a>
+  </div>
+
+  <div class="card overflow-hidden">
+    <div class="table-toolbar">
+      <div class="flex flex-wrap items-center gap-2 flex-1">
+        <input type="text" data-table-search class="form-control" style="max-width: 280px;" placeholder="Search products..." />
+        <select data-table-filter class="form-control" style="max-width: 160px;">
+          <option value="">All statuses</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table" data-table data-page-size="10">
+        <thead>
+          <tr>
+            <th data-sort>Code</th>
+            <th data-sort>Name</th>
+            <th data-sort>Category</th>
+            <th data-sort>UoM</th>
+            <th data-sort>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each products}}
+          <tr data-row data-filter="{{#if active}}active{{else}}inactive{{/if}}">
+            <td class="mono">{{productCode}}</td>
+            <td class="font-medium">{{name}}</td>
+            <td style="color: var(--text-secondary);">{{category}}</td>
+            <td style="color: var(--text-muted);">{{unitOfMeasure}}</td>
+            <td>
+              {{#if active}}<span class="badge badge-green">Active</span>
+              {{else}}<span class="badge badge-red">Inactive</span>{{/if}}
+            </td>
+            <td class="text-right"><a href="/products/{{id}}/edit" class="btn btn-secondary btn-sm">Edit</a></td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <div class="empty-state-title">No products yet</div>
+                <div class="empty-state-desc">Add catalog items to link them to suppliers.</div>
+              </div>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar" data-table-pagination></div>
+  </div>
+</main>
+
+{{> footer }}

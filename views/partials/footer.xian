@@ -1,0 +1,31 @@
+<div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+<div id="cmdPalette" class="cmd-backdrop" role="dialog" aria-modal="true" aria-label="Command Palette">
+  <div class="cmd-dialog">
+    <div class="cmd-input-wrap">
+      <svg class="w-4 h-4 flex-shrink-0" style="color: var(--text-secondary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="cmdInput" type="text" class="cmd-input" placeholder="Type a page or action..." autocomplete="off" />
+      <span class="kbd">Esc</span>
+    </div>
+    <div id="cmdList" class="cmd-list"></div>
+  </div>
+</div>
+
+<div id="confirmModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+  <div class="modal-dialog">
+    <div class="card-header">
+      <h3 id="confirmModalTitle" class="card-title">Confirm Action</h3>
+    </div>
+    <div class="card-body">
+      <p id="confirmModalMessage" class="text-sm" style="color: var(--text-secondary);">Are you sure you want to proceed?</p>
+      <div class="form-actions justify-end mt-5">
+        <button type="button" id="confirmModalCancel" class="btn btn-secondary btn-sm">Cancel</button>
+        <button type="button" id="confirmModalOk" class="btn btn-danger btn-sm">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

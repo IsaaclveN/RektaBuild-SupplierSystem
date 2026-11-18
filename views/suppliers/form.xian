@@ -1,0 +1,103 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter max-w-2xl">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{#if supplier}}Edit Supplier{{else}}New Supplier{{/if}}</h1>
+      <p class="page-subtitle">Organization profile and supplier role configuration.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <form class="card-body flex flex-col gap-4" method="POST"
+          action="{{#if supplier}}/suppliers/{{supplier.id}}{{else}}/suppliers{{/if}}" novalidate>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label" for="supCode">Code * <span class="font-normal" style="color: var(--text-muted);">(unique)</span></label>
+          <input id="supCode" type="text" name="code" class="form-control" value="{{supplier.code}}" placeholder="e.g. SUP-001" required />
+          <div class="form-error">Supplier code is required.</div>
+        </div>
+        <div>
+          <label class="form-label" for="supRole">Role</label>
+          <select id="supRole" name="role" class="form-control">
+            <option value="supplier" {{#if supplier}}{{#if (eq supplier.role "supplier")}}selected{{/if}}{{else}}selected{{/if}}>Supplier</option>
+            <option value="manufacturer" {{#if (eq supplier.role "manufacturer")}}selected{{/if}}>Manufacturer</option>
+            <option value="distributor" {{#if (eq supplier.role "distributor")}}selected{{/if}}>Distributor</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label" for="supName">Organization Name *</label>
+        <input id="supName" type="text" name="name" class="form-control" value="{{supplier.name}}" placeholder="e.g. SteelBuild Aggregates Inc." required />
+        <div class="form-error">Organization name is required.</div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label" for="supTin">TIN (Tax ID)</label>
+          <input id="supTin" type="text" name="tin" class="form-control" value="{{supplier.tin}}" placeholder="e.g. 000-123-456-000" />
+        </div>
+        <div>
+          <label class="form-label" for="supTerms">Payment Terms</label>
+          <select id="supTerms" name="paymentTerms" class="form-control">
+            <option value="COD" {{#if (eq supplier.paymentTerms "COD")}}selected{{/if}}>COD (Cash on Delivery)</option>
+            <option value="Net 15" {{#if (eq supplier.paymentTerms "Net 15")}}selected{{/if}}>Net 15</option>
+            <option value="Net 30" {{#if supplier}}{{#if (eq supplier.paymentTerms "Net 30")}}selected{{/if}}{{else}}selected{{/if}}>Net 30</option>
+            <option value="Net 60" {{#if (eq supplier.paymentTerms "Net 60")}}selected{{/if}}>Net 60</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label" for="supAccred">Accreditation Status</label>
+          <select id="supAccred" name="accreditationStatus" class="form-control">
+            <option value="ACCREDITED" {{#if supplier}}{{#if (eq supplier.accreditationStatus "ACCREDITED")}}selected{{/if}}{{else}}selected{{/if}}>ACCREDITED</option>
+            <option value="PENDING" {{#if (eq supplier.accreditationStatus "PENDING")}}selected{{/if}}>PENDING</option>
+            <option value="PROBATION" {{#if (eq supplier.accreditationStatus "PROBATION")}}selected{{/if}}>PROBATION</option>
+            <option value="BLACKLISTED" {{#if (eq supplier.accreditationStatus "BLACKLISTED")}}selected{{/if}}>BLACKLISTED</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="supPermit">Business / PCAB Permit Expiry</label>
+          <input id="supPermit" type="date" name="permitExpiry" class="form-control" value="{{supplier.permitExpiry}}" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="form-label" for="supContact">Contact Person</label>
+          <input id="supContact" type="text" name="contactPerson" class="form-control" value="{{supplier.contactPerson}}" placeholder="Sales / Account Rep" />
+        </div>
+        <div>
+          <label class="form-label" for="supPhone">Contact Phone</label>
+          <input id="supPhone" type="text" name="contactPhone" class="form-control" value="{{supplier.contactPhone}}" placeholder="e.g. 0917-000-0000" />
+        </div>
+        <div>
+          <label class="form-label" for="supEmail">Contact Email</label>
+          <input id="supEmail" type="email" name="contactEmail" class="form-control" value="{{supplier.contactEmail}}" placeholder="sales@supplier.ph" />
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label" for="supDesc">Description</label>
+        <textarea id="supDesc" name="description" rows="3" class="form-control" placeholder="Notes about this supplier...">{{supplier.description}}</textarea>
+      </div>
+
+      <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+        <input type="checkbox" name="active" {{#if supplier}}{{#if supplier.active}}checked{{/if}}{{else}}checked{{/if}} />
+        <span>Active organization</span>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Supplier</button>
+        <a href="/suppliers" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</main>
+
+{{> footer }}

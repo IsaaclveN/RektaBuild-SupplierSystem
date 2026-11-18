@@ -1,0 +1,63 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Receiving</h1>
+      <p class="page-subtitle">Recorded supplier deliveries and partial receiving history.</p>
+    </div>
+    <a href="/orders" class="btn btn-secondary">Go to Orders to Receive</a>
+  </div>
+
+  <div class="card overflow-hidden">
+    <div class="table-toolbar">
+      <div class="flex flex-wrap items-center gap-2 flex-1">
+        <input type="text" data-table-search class="form-control" style="max-width: 280px;" placeholder="Search receipt #, order #, or supplier..." />
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table" data-table data-page-size="10">
+        <thead>
+          <tr>
+            <th data-sort>Receipt #</th>
+            <th data-sort>Order #</th>
+            <th data-sort>Supplier</th>
+            <th data-sort>Shipment #</th>
+            <th data-sort>Items</th>
+            <th data-sort>Received By</th>
+            <th data-sort>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each receipts}}
+          <tr data-row>
+            <td><a href="/receipts/{{id}}" class="mono text-link">{{receiptNumber}}</a></td>
+            <td><a href="/orders/{{order.id}}" class="mono text-link">{{order.orderNumber}}</a></td>
+            <td>{{order.supplier.name}}</td>
+            <td style="color: var(--text-muted);">{{shipmentNumber}}</td>
+            <td>{{items.length}}</td>
+            <td style="color: var(--text-muted);">{{receivedBy.name}}</td>
+            <td style="color: var(--text-muted);">{{formatDate dateReceived}}</td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <div class="empty-state-title">No receipts recorded yet</div>
+                <div class="empty-state-desc">Open a placed purchase order and click Receive Delivery to record incoming items.</div>
+              </div>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar" data-table-pagination></div>
+  </div>
+</main>
+
+{{> footer }}
