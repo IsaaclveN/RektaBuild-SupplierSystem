@@ -344,7 +344,16 @@ work: `mysql -u <DB_USER> -p -e "SELECT 1;" <DB_NAME>`.
 
 **Web login does not persist over plain HTTP.**
 `NODE_ENV=production` sets `secure` cookies, which browsers only send over HTTPS.
-Complete the TLS step before relying on the web UI; API key access is unaffected.
+Either complete the TLS step, or — for an IP-only interim deployment — set
+`COOKIE_SECURE=false` in `.env` and restart:
+
+```bash
+echo 'COOKIE_SECURE=false' >> /var/www/rekta-supplier/.env
+set -a; source .env; set +a
+pm2 restart rekta-supplier --update-env
+```
+
+The session cookie is then sent unencrypted. Remove the line once HTTPS is live.
 
 ## 17. What must be verified on EC2 (cannot be verified locally)
 

@@ -53,6 +53,11 @@ if (!SESSION_SECRET) {
   throw new Error("SESSION_SECRET must be set when NODE_ENV=production.");
 }
 
+// Secure cookies require HTTPS. Set COOKIE_SECURE=false only for an IP-only or
+// otherwise plain-HTTP deployment; browsers drop Secure cookies over HTTP, which
+// makes login impossible.
+const COOKIE_SECURE = process.env.COOKIE_SECURE === "false" ? false : isProduction;
+
 app.set("trust proxy", 1);
 
 app.use(helmet({
@@ -97,7 +102,7 @@ app.use(session({
   cookie: {
     httpOnly: true,
     sameSite: "lax",
-    secure: isProduction,
+    secure: COOKIE_SECURE,
     maxAge: 8 * 60 * 60 * 1000,
   },
 }));

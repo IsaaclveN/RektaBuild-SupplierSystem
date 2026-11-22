@@ -153,6 +153,7 @@ Environment variables (see `.env.example`):
 | `HOST` | `0.0.0.0` dev / `127.0.0.1` prod | Bind address |
 | `SESSION_SECRET` | dev-only fallback | **Required** when `NODE_ENV=production` |
 | `AUTH_BYPASS` | active outside production | `false` forces the login check in development |
+| `COOKIE_SECURE` | `true` in production | Set `false` for a plain-HTTP deployment; otherwise login cannot persist |
 | `CORS_ORIGIN` | *(empty)* | Comma-separated allowlist for `/api/*`; never `*` |
 | `DB_NAME` | `Rektadb` | Database name |
 | `DB_USER` | `root` | MySQL user |
@@ -167,7 +168,9 @@ Environment variables (see `.env.example`):
   In production it is enforced automatically; set `AUTH_BYPASS=false` to enforce it
   locally too.
 - Production session cookies are `secure`, so the web UI requires HTTPS (a domain
-  plus Certbot). API key access works over HTTP.
+  plus Certbot). API key access works over HTTP. For an IP-only deployment set
+  `COOKIE_SECURE=false` to allow login over plain HTTP — the session cookie is then
+  transmitted unencrypted, so prefer HTTPS.
 - Sessions are stored in MySQL (`Sessions` table) and survive restarts.
 - The server auto-starts when run directly (`node index.js`) or under PM2.
 - To connect from other devices on the same Wi-Fi, allow inbound TCP port `3000`
