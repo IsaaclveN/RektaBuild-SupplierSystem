@@ -166,6 +166,9 @@ Environment variables (see `.env.example`):
 - The web session check is bypassed outside production so the demo stays usable.
   In production it is enforced automatically; set `AUTH_BYPASS=false` to enforce it
   locally too.
+- Production session cookies are `secure`, so the web UI requires HTTPS (a domain
+  plus Certbot). API key access works over HTTP.
 - Sessions are stored in MySQL (`Sessions` table) and survive restarts.
+- The server auto-starts when run directly (`node index.js`) or under PM2.
 - To connect from other devices on the same Wi-Fi, allow inbound TCP port `3000`
   in the host machine's firewall. On EC2, only Nginx exposes `80`/`443`.

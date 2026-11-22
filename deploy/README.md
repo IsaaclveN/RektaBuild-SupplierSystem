@@ -310,7 +310,43 @@ sudo rm /etc/nginx/sites-enabled/rekta-supplier
 sudo systemctl reload nginx
 ```
 
-## 16. What must be verified on EC2 (cannot be verified locally)
+## 16. Troubleshooting
+
+**PM2 shows `online` but nothing listens on 3000, then the process exits.**
+PM2 fork mode runs `ProcessContainerFork.js` as the entry, so a naive
+`process.argv[1]` check never matches `index.js`. `index.js` detects PM2 via
+`process.env.pm_id` / `process.env.PM2_HOME` and starts the server anyway. If you
+see this on an older checkout, update the code (`git pull`) rather than adding a
+wrapper script.
+
+**PM2 daemon inherits IDE or agent environment variables.**
+If PM2 was first started from an editor or agent shell, the daemon can carry
+`ELECTRON_RUN_AS_NODE`, `VSCODE_*`, `WINDSURF_*`, or `NODE_CHANNEL_*` and the app
+behaves unexpectedly. Reset it:
+
+```bash
+pm2 kill
+for v in $(compgen -e); do case "$v" in VSCODE_*|WINDSURF_*|ELECTRON_*|ACP_*|DEVIN_*) unset "$v";; esac; done
+unset NODE_CHANNEL_FD NODE_CHANNEL_SERIALIZATION_MODE
+pm2 start ecosystem.config.cjs --env production
+```
+
+**`bcrypt` fails to load after `npm ci`.**
+Newer npm versions gate install scripts. Approve and rebuild:
+
+```bash
+npm install-scripts approve bcrypt && npm rebuild bcrypt
+```
+
+**`/health` returns `"db":"down"`.**
+Check `pm2 logs rekta-supplier --lines 50`, then confirm the `.env` credentials
+work: `mysql -u <DB_USER> -p -e "SELECT 1;" <DB_NAME>`.
+
+**Web login does not persist over plain HTTP.**
+`NODE_ENV=production` sets `secure` cookies, which browsers only send over HTTPS.
+Complete the TLS step before relying on the web UI; API key access is unaffected.
+
+## 17. What must be verified on EC2 (cannot be verified locally)
 
 - TLS issuance and renewal for `<DOMAIN>`
 - Nginx syntax with the real certificate paths present

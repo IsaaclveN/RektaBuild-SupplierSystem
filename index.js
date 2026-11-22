@@ -214,11 +214,14 @@ export const startServer = (port = PORT) => {
   });
 };
 
-// Auto-start only when executed directly (node index.js).
+// Auto-start when executed directly (node index.js) or when supervised by PM2.
+// PM2 fork mode runs ProcessContainerFork.js as the entry, so process.argv[1]
+// never matches this module; PM2_HOME/pm_id is used to detect that case.
 // When imported by electron/main.js, Electron manages the server lifecycle.
 const isDirectRun =
   process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+const isSupervised = Boolean(process.env.pm_id || process.env.PM2_HOME);
 
-if (isDirectRun && !process.env.XIAN_ELECTRON) {
+if ((isDirectRun || isSupervised) && !process.env.XIAN_ELECTRON) {
   startServer();
 }
