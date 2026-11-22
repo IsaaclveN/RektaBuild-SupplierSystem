@@ -1,9 +1,17 @@
 import { User } from "../models/userModel.js";
 
-// TEMPORARY: auth disabled for demo — pages are accessible without login.
-// Restore the session check below when login is needed again.
+// Demo bypass: active outside production unless AUTH_BYPASS=false. In production
+// (NODE_ENV=production) the session check below is enforced.
+const bypassEnabled = () =>
+  process.env.AUTH_BYPASS === "true" ||
+  (process.env.AUTH_BYPASS !== "false" && process.env.NODE_ENV !== "production");
+
 export const requireAuth = async (req, res, next) => {
-  if (!req.session.userId) return next();
+  if (!req.session.userId) {
+    if (bypassEnabled()) return next();
+    req.flash("error_msg", "Please sign in to continue.");
+    return res.redirect("/login");
+  }
 
   try {
     const user = await User.findByPk(req.session.userId);

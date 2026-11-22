@@ -26,27 +26,80 @@
 import express from "express";
 import path from "path";
 import session from "express-session";
+import SequelizeStoreFactory from "connect-session-sequelize";
 import flash from "connect-flash";
+import helmet from "helmet";
+import cors from "cors";
 import router from "./routes/index.js";
 import fs from 'fs';
 import hbs from "hbs";
 import { fileURLToPath, pathToFileURL } from "url";
 import { dirname } from "path";
+import { sequelize } from "./models/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const isProduction = process.env.NODE_ENV === "production";
+// Behind Nginx every request arrives from the proxy, so trust the first hop to
+// make secure cookies and req.ip behave correctly.
+const HOST = process.env.HOST || (isProduction ? "127.0.0.1" : "0.0.0.0");
+
+const SESSION_SECRET = process.env.SESSION_SECRET ||
+  (isProduction ? null : "xianfire-dev-secret");
+if (!SESSION_SECRET) {
+  throw new Error("SESSION_SECRET must be set when NODE_ENV=production.");
+}
+
+app.set("trust proxy", 1);
+
+app.use(helmet({
+  // Inline theme bootstrap and Tailwind's CDN require a permissive policy here.
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
+
+// CORS is limited to the API surface and to an explicit allowlist. Never "*".
+const allowedOrigins = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+if (allowedOrigins.length) {
+  app.use("/api", cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Authorization", "X-API-Key", "Content-Type"],
+    maxAge: 600,
+  }));
+}
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(process.cwd(), "public")));
 
+// Persistent session store so logins survive restarts and multiple processes.
+const SequelizeStore = SequelizeStoreFactory(session.Store);
+const sessionStore = new SequelizeStore({
+  db: sequelize,
+  tableName: "Sessions",
+});
+sessionStore.sync().catch((err) => {
+  console.error("Could not initialise the session store:", err.message);
+});
+
 app.use(session({
-  secret: "xianfire-secret-key",
+  secret: SESSION_SECRET,
+  store: sessionStore,
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: isProduction,
+    maxAge: 8 * 60 * 60 * 1000,
+  },
 }));
 app.use(flash());
 
@@ -153,8 +206,8 @@ export default app;
 // Exported so the Electron main process can control startup itself.
 export const startServer = (port = PORT) => {
   return new Promise((resolve, reject) => {
-    const server = app.listen(port, () => {
-      console.log(`🔥 XianFire running at http://localhost:${port}`);
+    const server = app.listen(port, HOST, () => {
+      console.log(`🔥 XianFire running at http://${HOST}:${port}`);
       resolve(server);
     });
     server.on("error", reject);

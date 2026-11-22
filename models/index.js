@@ -9,6 +9,7 @@ import { ProductSupplierPreference } from "./productSupplierPreferenceModel.js";
 import { Order, OrderItem } from "./orderModel.js";
 import { Receipt, ReceiptItem } from "./receiptModel.js";
 import { Document } from "./documentModel.js";
+import { ApiKey } from "./apiKeyModel.js";
 
 // ─── Associations (mirroring OpenBoxes domain relationships) ────────────────
 
@@ -54,8 +55,11 @@ Order.hasMany(Document, { foreignKey: "orderId", as: "documents" });
 Document.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 Document.belongsTo(User, { foreignKey: "uploadedById", as: "uploadedBy" });
 
+// API keys for cross-module integration
+ApiKey.belongsTo(User, { foreignKey: "createdById", as: "createdBy" });
+
 export {
   sequelize, User, Organization, Location, Product, ProductSupplier,
   PreferenceType, ProductSupplierPreference, Order, OrderItem,
-  Receipt, ReceiptItem, Document
+  Receipt, ReceiptItem, Document, ApiKey
 };

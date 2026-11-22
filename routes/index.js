@@ -25,8 +25,34 @@
     */
     
 import express from "express";
+import fs from "node:fs";
 import { homePage } from "../controllers/homeController.js";
+import { sequelize } from "../models/index.js";
+import { requireApiKey, requireApiKeyOrSession } from "../middleware/apiKey.js";
+import {
+  apiKeyListPage, createApiKey, revokeApiKey, toggleApiKey,
+} from "../controllers/apiKeyController.js";
 const router = express.Router();
+const pkg = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+
+// ─── Health check (unauthenticated, used by Nginx and PM2 probes) ───────────
+router.get("/health", async (req, res) => {
+  let db = "down";
+  try {
+    await sequelize.authenticate();
+    db = "up";
+  } catch {
+    db = "down";
+  }
+  res.status(db === "up" ? 200 : 503).json({
+    status: db === "up" ? "ok" : "degraded",
+    db,
+    uptime: Math.round(process.uptime()),
+    version: pkg.version,
+    timestamp: new Date().toISOString(),
+  });
+});
+
 router.get("/", homePage);
 
 import { loginPage, registerPage, forgotPasswordPage, dashboardPage, loginUser, registerUser, logoutUser } from "../controllers/authController.js";
@@ -63,7 +89,7 @@ router.post("/login", loginUser);
 router.get("/register", registerPage);
 router.post("/register", registerUser);
 router.get("/forgot-password", forgotPasswordPage);
-router.get("/dashboard", dashboardPage);
+router.get("/dashboard", requireAuth, dashboardPage);
 router.get("/logout", logoutUser);
 
 // ─── Suppliers (Organizations) ──────────────────────────────────────────────
@@ -95,7 +121,7 @@ router.get("/product-sources/:id/edit", requireAuth, editProductSourcePage);
 router.post("/product-sources/:id", requireAuth, updateProductSource);
 router.post("/product-sources/:id/preferences", requireAuth, addSourcePreference);
 router.post("/product-sources/:id/preferences/:preferenceId/delete", requireAuth, deleteSourcePreference);
-router.get("/api/suppliers/:id/product-sources", requireAuth, apiProductSourcesBySupplier);
+router.get("/api/suppliers/:id/product-sources", requireApiKeyOrSession, apiProductSourcesBySupplier);
 
 // ─── Purchase Orders ────────────────────────────────────────────────────────
 router.get("/orders", requireAuth, orderListPage);
@@ -119,8 +145,16 @@ router.get("/receipts/:id/print", requireAuth, printReceiptPage);
 
 // ─── Reports & PDF Export + ERP Integration APIs ────────────────────────────
 router.get("/reports", requireAuth, reportsPage);
-router.get("/api/integration/suppliers", apiIntegrationSuppliers);
-router.get("/api/integration/orders", apiIntegrationOrders);
-router.get("/api/integration/receipts", apiIntegrationReceipts);
+
+// ─── API key management (session-authenticated admin surface) ───────────────
+router.get("/api-keys", requireAuth, apiKeyListPage);
+router.post("/api-keys", requireAuth, createApiKey);
+router.post("/api-keys/:id/revoke", requireAuth, revokeApiKey);
+router.post("/api-keys/:id/toggle", requireAuth, toggleApiKey);
+
+// ─── Integration endpoints consumed by other ERP modules ────────────────────
+router.get("/api/integration/suppliers", requireApiKey, apiIntegrationSuppliers);
+router.get("/api/integration/orders", requireApiKey, apiIntegrationOrders);
+router.get("/api/integration/receipts", requireApiKey, apiIntegrationReceipts);
 
 export default router;

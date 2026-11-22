@@ -9,6 +9,16 @@ import {
 } from "./models/index.js";
 import inquirer from "inquirer";
 
+// DESTRUCTIVE: this script drops and recreates every table.
+// Use scripts/db-setup.js for non-destructive setup on existing databases.
+if (process.env.NODE_ENV === "production" && !process.argv.includes("--force-destroy")) {
+  console.error(
+    "Refusing to run the destructive migration with NODE_ENV=production.\n" +
+    "Use 'npm run db:setup' instead. To override deliberately, pass --force-destroy."
+  );
+  process.exit(1);
+}
+
 const rootSequelize = new Sequelize("mysql://root:@localhost:3306/", {
   logging: process.env.DB_LOGGING === "true" ? console.log : false,
 });

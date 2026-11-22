@@ -1,0 +1,66 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter max-w-3xl">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">API Key Created</h1>
+      <p class="page-subtitle">{{keyName}} · {{role}} role</p>
+    </div>
+    <a href="/api-keys" class="btn btn-secondary">Back to API Keys</a>
+  </div>
+
+  <div class="card mb-4" style="border-color: var(--warning-border, #f59e0b);">
+    <div class="card-body">
+      <p class="text-sm font-semibold mb-2">Copy this key now — it will not be shown again.</p>
+      <p class="text-xs mb-3" style="color: var(--text-secondary);">
+        Only a SHA-256 hash is stored. If you lose it, revoke the key and create a new one.
+      </p>
+      <div class="flex flex-wrap items-center gap-2">
+        <input id="plainKey" type="text" readonly value="{{plainKey}}" class="form-control mono" style="flex: 1 1 320px;" onclick="this.select()" />
+        <button type="button" id="copyKeyBtn" class="btn btn-primary">Copy</button>
+      </div>
+      <div id="copyHint" class="text-xs mt-2" style="color: var(--text-muted); display: none;">Copied to clipboard.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">How the consumer uses it</h2>
+    </div>
+    <div class="card-body text-sm flex flex-col gap-3">
+      <div>
+        <span class="form-label mb-1">Authorization header</span>
+        <pre class="mono text-xs p-3 rounded" style="background: var(--bg-surface-muted); overflow-x: auto;">Authorization: Bearer {{plainKey}}</pre>
+      </div>
+      <div>
+        <span class="form-label mb-1">Alternative header</span>
+        <pre class="mono text-xs p-3 rounded" style="background: var(--bg-surface-muted); overflow-x: auto;">X-API-Key: {{plainKey}}</pre>
+      </div>
+      <div>
+        <span class="form-label mb-1">Example request</span>
+        <pre class="mono text-xs p-3 rounded" style="background: var(--bg-surface-muted); overflow-x: auto;">curl -H "Authorization: Bearer {{plainKey}}" \
+  https://your-domain/api/integration/orders</pre>
+      </div>
+      <p class="text-xs" style="color: var(--text-muted);">
+        Share this key privately (password manager or direct message). Never commit it to Git.
+      </p>
+    </div>
+  </div>
+</main>
+
+<script>
+  document.getElementById("copyKeyBtn")?.addEventListener("click", async () => {
+    const input = document.getElementById("plainKey");
+    try {
+      await navigator.clipboard.writeText(input.value);
+    } catch {
+      input.select();
+      document.execCommand("copy");
+    }
+    document.getElementById("copyHint").style.display = "block";
+  });
+</script>
+
+{{> footer }}

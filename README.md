@@ -60,6 +60,14 @@ No front-end framework and no chart library — the UI uses custom CSS and nativ
 - Quality acceptance percentage (accepted vs. rejected quantities)
 - Derived grade: `OUTSTANDING`, `GOOD`, `FAIR`, `POOR`, or `NO_DATA`
 
+**Integration and operations**
+- API keys issued from `/api-keys`; only SHA-256 hashes are stored
+- `Authorization: Bearer rbk_...` or `X-API-Key` for cross-module calls
+- Role-scoped keys: `reader` (GET only) and `writer`
+- Unauthenticated `GET /health` liveness probe
+- Persistent MySQL session store, Helmet security headers, explicit CORS allowlist
+- Non-destructive `npm run db:setup` for existing databases
+
 ## Getting Started
 
 Requirements: Node.js and a running MySQL server (XAMPP, Laragon, or standalone).
@@ -72,7 +80,10 @@ npm run dev               # http://localhost:3000
 ```
 
 > `npm run migrate` runs `sequelize.sync({ force: true })` and **drops all existing
-> tables**. Run it only on a fresh setup.
+> tables**. Run it only on a fresh setup. For an existing database use
+> `npm run db:setup`, which creates missing tables and seeds reference rows without
+> touching existing data. The destructive script also refuses to run when
+> `NODE_ENV=production`.
 
 ## Scripts
 
@@ -80,7 +91,8 @@ npm run dev               # http://localhost:3000
 |---|---|
 | `npm run dev` / `npm run xian` | Start with nodemon |
 | `npm start` | Start without watcher |
-| `npm run migrate` | Create database, sync tables, seed preference types |
+| `npm run db:setup` | Non-destructive schema + seed setup (safe to re-run) |
+| `npm run migrate` | Destructive reset: create database, drop and recreate tables |
 | `npm run route:list` | Print all registered routes |
 
 ## Project Structure
@@ -99,19 +111,36 @@ index.js        App setup, helpers, partial registration, server start
 
 ## Integration API
 
-Consumed by the Inventory and Accounting modules over the local network.
+Consumed by the Inventory and Accounting modules over the local network or HTTPS.
+Full contract, payloads, and error shapes: [API.md](API.md).
 
-| Endpoint | Returns |
+| Endpoint | Auth | Returns |
+|---|---|---|
+| `GET /health` | none | `{ status, db, uptime, version, timestamp }` |
+| `GET /api/integration/suppliers` | API key | Supplier master data, TIN, payment terms, locations |
+| `GET /api/integration/orders` | API key | Purchase orders with items, project site, terms |
+| `GET /api/integration/receipts` | API key | Receipts with accepted and rejected quantities per item |
+
+```bash
+curl -H "Authorization: Bearer rbk_<KEY>" https://<domain>/api/integration/orders
+```
+
+Issue and revoke keys from the **API Keys** page (`/api-keys`). The plaintext key is
+shown once; only its SHA-256 hash is stored.
+
+## Deployment
+
+AWS EC2 with Node.js, PM2, Nginx, and Let's Encrypt. The manual runbook, including
+DNS, Security Groups, database setup, certificates, and rollback, is in
+[deploy/README.md](deploy/README.md).
+
+Supporting files:
+
+| File | Purpose |
 |---|---|
-| `GET /api/integration/suppliers` | Supplier master data, TIN, payment terms, locations |
-| `GET /api/integration/orders` | Purchase orders with items, project site, terms |
-| `GET /api/integration/receipts` | Receipts with accepted and rejected quantities per item |
-
-Example from another machine on the same network:
-
-```
-http://<host-ip>:3000/api/integration/orders
-```
+| `ecosystem.config.cjs` | PM2 process definition with a production environment |
+| `deploy/nginx/rekta-supplier.conf` | Nginx reverse proxy and TLS termination |
+| `deploy/scripts/healthcheck.sh` | Curl-based health probe |
 
 ## Configuration
 
@@ -119,16 +148,24 @@ Environment variables (see `.env.example`):
 
 | Variable | Default | Purpose |
 |---|---|---|
+| `NODE_ENV` | `development` | Set to `production` on EC2 |
+| `PORT` | `3000` | Internal HTTP port |
+| `HOST` | `0.0.0.0` dev / `127.0.0.1` prod | Bind address |
+| `SESSION_SECRET` | dev-only fallback | **Required** when `NODE_ENV=production` |
+| `AUTH_BYPASS` | active outside production | `false` forces the login check in development |
+| `CORS_ORIGIN` | *(empty)* | Comma-separated allowlist for `/api/*`; never `*` |
 | `DB_NAME` | `Rektadb` | Database name |
 | `DB_USER` | `root` | MySQL user |
 | `DB_PASS` | *(empty)* | MySQL password |
 | `DB_HOST` | `localhost` | MySQL host |
 | `DB_PORT` | `3306` | MySQL port |
 | `DB_LOGGING` | `false` | Print SQL queries when `true` |
-| `PORT` | `3000` | HTTP port |
 
 ## Notes
 
-- Authentication middleware currently passes requests through for demo use.
+- The web session check is bypassed outside production so the demo stays usable.
+  In production it is enforced automatically; set `AUTH_BYPASS=false` to enforce it
+  locally too.
+- Sessions are stored in MySQL (`Sessions` table) and survive restarts.
 - To connect from other devices on the same Wi-Fi, allow inbound TCP port `3000`
-  in the host machine's firewall.
+  in the host machine's firewall. On EC2, only Nginx exposes `80`/`443`.

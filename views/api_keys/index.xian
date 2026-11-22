@@ -1,0 +1,101 @@
+{{> head }}
+<body>
+{{> nav }}
+
+<main class="page-wrap page-enter max-w-4xl">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">API Keys</h1>
+      <p class="page-subtitle">Issue keys for other ERP modules to read supplier, purchase order, and receipt data.</p>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h2 class="card-title">Create Key</h2>
+    </div>
+    <form method="POST" action="/api-keys" class="card-body grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+      <div class="sm:col-span-2">
+        <label class="form-label" for="keyName">Key Name *</label>
+        <input id="keyName" type="text" name="name" class="form-control" placeholder="e.g. Inventory Module" required />
+      </div>
+      <div>
+        <label class="form-label" for="keyRole">Role</label>
+        <select id="keyRole" name="role" class="form-control">
+          <option value="reader">reader (GET only)</option>
+          <option value="writer">writer (read and write)</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label" for="keyExpiry">Expires On</label>
+        <input id="keyExpiry" type="date" name="expiresAt" class="form-control" />
+      </div>
+      <div class="sm:col-span-4">
+        <button type="submit" class="btn btn-primary btn-sm">Generate Key</button>
+        <span class="text-xs ml-2" style="color: var(--text-muted);">The plaintext key is shown once. Store it privately.</span>
+      </div>
+    </form>
+  </div>
+
+  <div class="card overflow-hidden">
+    <div class="card-header">
+      <h2 class="card-title">Issued Keys</h2>
+      <span class="text-xs" style="color: var(--text-muted);">Only SHA-256 hashes are stored</span>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Prefix</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Last Used</th>
+            <th>Expires</th>
+            <th>Created By</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each keys}}
+          <tr>
+            <td class="font-medium">{{name}}</td>
+            <td class="mono">{{keyPrefix}}…</td>
+            <td><span class="badge {{#if (eq role "writer")}}badge-teal{{else}}badge-slate{{/if}}">{{role}}</span></td>
+            <td>
+              {{#if active}}<span class="badge badge-green">Active</span>
+              {{else}}<span class="badge badge-red">Revoked</span>{{/if}}
+            </td>
+            <td style="color: var(--text-muted);">{{#if lastUsedAt}}{{formatDate lastUsedAt}}{{else}}Never{{/if}}</td>
+            <td style="color: var(--text-muted);">{{#if expiresAt}}{{formatDate expiresAt}}{{else}}No expiry{{/if}}</td>
+            <td style="color: var(--text-muted);">{{#if createdBy}}{{createdBy.name}}{{else}}—{{/if}}</td>
+            <td class="text-right">
+              <div class="inline-flex items-center gap-2">
+                <form method="POST" action="/api-keys/{{id}}/toggle">
+                  <button type="submit" class="btn btn-secondary btn-sm">{{#if active}}Disable{{else}}Enable{{/if}}</button>
+                </form>
+                {{#if active}}
+                <form method="POST" action="/api-keys/{{id}}/revoke" data-confirm="Revoke key {{name}}? Consumers using it will get 401.">
+                  <button type="submit" class="btn btn-danger btn-sm">Revoke</button>
+                </form>
+                {{/if}}
+              </div>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="8">
+              <div class="empty-state">
+                <div class="empty-state-title">No API keys yet</div>
+                <div class="empty-state-desc">Create a key above so the Inventory or Accounting module can call the integration endpoints.</div>
+              </div>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+{{> footer }}
