@@ -231,6 +231,9 @@ export const apiIntegrationReceipts = async (req, res) => {
     source: "RektaBuild-Supplier",
     exportedAt: new Date().toISOString(),
     count: receipts.length,
-    data: receipts,
+    // Receipts are append-only (no update/delete path exists), so every row is
+    // final. `receiptId` aliases `id` because the integration contract names it
+    // explicitly; `finalized` marks rows as safe to ingest for stock-in.
+    data: receipts.map((r) => ({ ...r.toJSON(), receiptId: r.id, finalized: true })),
   });
 };

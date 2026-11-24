@@ -182,6 +182,11 @@ Goods receipts with per-item accepted and rejected quantities. **This is the end
 the Inventory module must call for stock-in.** Use `quantityReceived` (accepted only);
 never post `quantityRejected` into stock.
 
+Receipts are **finalized at creation** — the module has no update or delete path
+for them. Each exported row is a complete, immutable record of what was accepted
+and rejected. Every row carries `"finalized": true` and a `receiptId` field
+(aliases `id`) so consumers can rely on them for one-time stock-in ingestion.
+
 **Auth:** API key (`reader`)
 
 **Query parameters:** none
@@ -196,6 +201,8 @@ never post `quantityRejected` into stock.
   "data": [
     {
       "id": 7,
+      "receiptId": 7,
+      "finalized": true,
       "receiptNumber": "RCT-1762000000000",
       "orderId": 4,
       "shipmentNumber": "SHP-001",
@@ -220,6 +227,10 @@ never post `quantityRejected` into stock.
           "quantityReceived": 60,
           "quantityRejected": 4,
           "inspectionStatus": "PARTIAL_REJECT",
+          "qtyMatchesPo": true,
+          "packagingIntact": false,
+          "specsCorrect": true,
+          "noVisibleDamage": true,
           "comment": "4 bags torn",
           "product": {
             "id": 2,
@@ -233,6 +244,24 @@ never post `quantityRejected` into stock.
   ]
 }
 ```
+
+`inspectionStatus` enum: `ACCEPTED` | `PARTIAL_REJECT` | `REJECTED`. The status is
+derived server-side from the accepted/rejected quantities **and** the standardized
+inspection checklist (AS-IS P7): all four checks must pass for `ACCEPTED`; any
+failed check with accepted quantity yields `PARTIAL_REJECT`.
+
+Checklist fields on `items[]` (all `boolean | null` — `null` means the check was
+not recorded, e.g. receipts created before the checklist existed):
+
+| Field | Check |
+|---|---|
+| `qtyMatchesPo` | Delivered quantity matches the PO line |
+| `packagingIntact` | Packaging is undamaged/sealed |
+| `specsCorrect` | Product matches ordered specs |
+| `noVisibleDamage` | No visible defects on the goods |
+
+Checklist values are informational for consumers — stock-in should still use only
+`quantityReceived`/`quantityRejected`.
 
 ---
 
@@ -278,6 +307,13 @@ curl -sS -H "Authorization: Bearer rbk_<KEY>" \
 curl -sS -o /dev/null -w "%{http_code}\n" \
   https://<DOMAIN>/api/integration/orders
 ```
+
+## Cross-module integration
+
+This document covers the endpoints **other modules call on Supply**. For the
+reverse direction — Supply calling the Inventory module's `/api/v1` API — see
+[`deploy/INTEGRATION.md`](deploy/INTEGRATION.md), which also records the product
+mapping contract and the proposed ownership split.
 
 ## Key lifecycle
 

@@ -169,6 +169,7 @@ hbs.registerHelper("inspectClass", (s) => ({
   PARTIAL_REJECT: "badge-amber",
   REJECTED: "badge-red",
 }[s] || "badge-slate"));
+hbs.registerHelper("checkMark", (v) => (v === true || v === 1 ? "✓" : v === false || v === 0 ? "✗" : "—"));
 hbs.registerHelper("gradeClass", (s) => ({
   OUTSTANDING: "badge-green",
   GOOD: "badge-teal",

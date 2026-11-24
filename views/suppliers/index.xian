@@ -29,9 +29,10 @@
           <tr>
             <th data-sort>Code</th>
             <th data-sort>Name</th>
-            <th data-sort>Role</th>
+            <th data-sort>Contact</th>
             <th data-sort>Terms</th>
             <th data-sort>Accreditation</th>
+            <th data-sort>Locations</th>
             <th data-sort>Status</th>
             <th class="text-right">Actions</th>
           </tr>
@@ -41,9 +42,21 @@
           <tr data-row data-filter="{{#if active}}active{{else}}inactive{{/if}}">
             <td class="mono">{{code}}</td>
             <td><a href="/suppliers/{{id}}" class="text-link">{{name}}</a></td>
-            <td class="capitalize" style="color: var(--text-secondary);">{{role}}</td>
+            <td>
+              {{#if contactPerson}}<div>{{contactPerson}}</div>{{/if}}
+              {{#if contactEmail}}<div style="color: var(--text-secondary); font-size: 0.85em;">{{contactEmail}}</div>{{/if}}
+              {{#if contactPhone}}<div style="color: var(--text-secondary); font-size: 0.85em;">{{contactPhone}}</div>{{/if}}
+              {{#unless contactPerson}}{{#unless contactEmail}}{{#unless contactPhone}}—{{/unless}}{{/unless}}{{/unless}}
+            </td>
             <td style="color: var(--text-secondary);">{{#if paymentTerms}}{{paymentTerms}}{{else}}Net 30{{/if}}</td>
             <td><span class="badge {{accredClass accreditationStatus}}">{{accreditationStatus}}</span></td>
+            <td>
+              {{#each locations}}
+                <div>{{name}}{{#if address1}}: {{address1}}{{/if}}{{#if city}}, {{city}}{{/if}}</div>
+              {{else}}
+                —
+              {{/each}}
+            </td>
             <td>
               {{#if active}}<span class="badge badge-green">Active</span>
               {{else}}<span class="badge badge-red">Inactive</span>{{/if}}
@@ -57,7 +70,7 @@
           </tr>
           {{else}}
           <tr>
-            <td colspan="7">
+            <td colspan="8">
               <div class="empty-state">
                 <div class="empty-state-title">No suppliers yet</div>
                 <div class="empty-state-desc">Add your first supplier organization to start managing sourcing and orders.</div>

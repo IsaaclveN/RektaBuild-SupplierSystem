@@ -34,6 +34,7 @@
                 <th>Remaining</th>
                 <th style="width: 115px;">Qty Accepted</th>
                 <th style="width: 115px;">Qty Rejected</th>
+                <th>Inspection Checklist</th>
                 <th>Item Comment (quality)</th>
               </tr>
             </thead>
@@ -50,6 +51,13 @@
                 <td class="font-medium">{{remaining quantity quantityReceived}}</td>
                 <td><input type="number" name="quantityReceived" class="form-control" min="0" max="{{remaining quantity quantityReceived}}" value="0" /></td>
                 <td><input type="number" name="quantityRejected" class="form-control" min="0" value="0" /></td>
+                <td class="text-xs" style="color: var(--text-secondary); line-height: 1.7;">
+                  <input type="hidden" name="checklistSubmitted_{{id}}" value="1" />
+                  <label class="flex items-center gap-1.5"><input type="checkbox" name="qtyMatchesPo_{{id}}" /> Qty matches PO</label>
+                  <label class="flex items-center gap-1.5"><input type="checkbox" name="packagingIntact_{{id}}" /> Packaging intact</label>
+                  <label class="flex items-center gap-1.5"><input type="checkbox" name="specsCorrect_{{id}}" /> Specs correct</label>
+                  <label class="flex items-center gap-1.5"><input type="checkbox" name="noVisibleDamage_{{id}}" /> No visible damage</label>
+                </td>
                 <td><input type="text" name="itemComment" class="form-control" placeholder="Condition / reject reason" /></td>
               </tr>
               {{/each}}
@@ -58,7 +66,7 @@
         </div>
       </div>
 
-      <p class="text-xs" style="color: var(--text-muted);">Partial receiving is supported — leave 0 for items not included in this delivery.</p>
+      <p class="text-xs" style="color: var(--text-muted);">Partial receiving is supported — leave 0 for items not included in this delivery. All four checklist items must pass for a clean ACCEPT; any unticked check is recorded as a failed inspection.</p>
 
       <div class="form-actions">
         <button type="submit" class="btn btn-success">Record Receipt</button>

@@ -18,7 +18,9 @@
     "create:add-middleware": "node create.js middleware",
     "create:upload-middleware": "node create.js upload-middleware",
     "route:list": "node list-routes.js",
-    "route:cache": "node route-cache.js"
+    "route:cache": "node route-cache.js",
+    "inventory:check": "node scripts/check-inventory.js",
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",

@@ -38,6 +38,26 @@ const run = async () => {
   await sequelize.sync();
   console.log("Schema is up to date (non-destructive).");
 
+  // 2b. Additive column upgrades. Plain sync() never alters existing tables, so
+  // nullable columns added to released models are applied here — ADD COLUMN only.
+  const ADDITIVE_COLUMNS = [
+    ["ReceiptItems", "qtyMatchesPo", "TINYINT(1) NULL"],
+    ["ReceiptItems", "packagingIntact", "TINYINT(1) NULL"],
+    ["ReceiptItems", "specsCorrect", "TINYINT(1) NULL"],
+    ["ReceiptItems", "noVisibleDamage", "TINYINT(1) NULL"],
+  ];
+  for (const [table, column, ddl] of ADDITIVE_COLUMNS) {
+    const [found] = await sequelize.query(
+      `SELECT 1 FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+      { replacements: [DB_NAME, table, column] },
+    );
+    if (!found.length) {
+      await sequelize.query(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${ddl}`);
+      console.log(`Added column ${table}.${column}.`);
+    }
+  }
+
   // 3. Idempotent seed of preference types.
   for (const row of PREFERENCE_TYPES) {
     const [record, created] = await PreferenceType.findOrCreate({

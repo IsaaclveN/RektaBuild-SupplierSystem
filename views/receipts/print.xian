@@ -59,7 +59,7 @@
               <td class="font-medium">{{product.name}}</td>
               <td class="text-right font-medium">{{quantityReceived}}</td>
               <td class="text-right font-medium">{{quantityRejected}}</td>
-              <td>{{inspectionStatus}}</td>
+              <td>{{inspectionStatus}}<br /><span style="font-size: 0.8em; color: #555;">Qty {{checkMark qtyMatchesPo}} · Pkg {{checkMark packagingIntact}} · Spec {{checkMark specsCorrect}} · Dmg {{checkMark noVisibleDamage}}</span></td>
               <td>{{#if comment}}{{comment}}{{else}}—{{/if}}</td>
             </tr>
             {{/each}}

@@ -57,10 +57,21 @@ export const createReceipt = async (req, res) => {
       const rej = Math.max(0, parseInt(rejectedQtys[i], 10) || 0);
       if (!orderItem || (qty <= 0 && rej <= 0)) return null;
       const acceptedQty = Math.min(qty, orderItem.quantity - orderItem.quantityReceived);
-      const inspectionStatus = rej > 0
+      // Standardized checklist (AS-IS P7): all four checks must be ticked for a
+      // clean ACCEPT. Any unticked check records a failed verification, so the
+      // item can't be marked fully accepted on informal oversight alone.
+      const checkKeys = ["qtyMatchesPo", "packagingIntact", "specsCorrect", "noVisibleDamage"];
+      const hasChecklist = req.body[`checklistSubmitted_${orderItem.id}`] !== undefined;
+      const checks = Object.fromEntries(checkKeys.map((k) => [
+        k, hasChecklist ? req.body[`${k}_${orderItem.id}`] === "on" : null,
+      ]));
+      const anyCheckFailed = hasChecklist && checkKeys.some(
+        (k) => req.body[`${k}_${orderItem.id}`] !== "on",
+      );
+      const inspectionStatus = (rej > 0 || anyCheckFailed)
         ? (acceptedQty > 0 ? "PARTIAL_REJECT" : "REJECTED")
         : "ACCEPTED";
-      return { orderItem, qty: acceptedQty, rej, inspectionStatus, comment: comments[i] };
+      return { orderItem, qty: acceptedQty, rej, inspectionStatus, checks, comment: comments[i] };
     })
     .filter(Boolean)
     .filter((it) => it.qty > 0 || it.rej > 0);
@@ -85,6 +96,7 @@ export const createReceipt = async (req, res) => {
     quantityReceived: it.qty,
     quantityRejected: it.rej,
     inspectionStatus: it.inspectionStatus,
+    ...it.checks,
     comment: it.comment || null,
   })));
 

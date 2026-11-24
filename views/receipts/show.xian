@@ -37,6 +37,7 @@
             <th>Qty Accepted</th>
             <th>Qty Rejected</th>
             <th>Inspection</th>
+            <th>Checklist</th>
             <th>Quality / Item Comment</th>
           </tr>
         </thead>
@@ -50,6 +51,12 @@
             <td class="font-medium">{{quantityReceived}}</td>
             <td class="font-medium" style="color: {{#if quantityRejected}}#dc2626{{else}}var(--text-muted){{/if}};">{{quantityRejected}}</td>
             <td><span class="badge {{inspectClass inspectionStatus}}">{{inspectionStatus}}</span></td>
+            <td class="text-xs" style="color: var(--text-secondary); line-height: 1.7;">
+              <div>{{checkMark qtyMatchesPo}} Qty matches PO</div>
+              <div>{{checkMark packagingIntact}} Packaging intact</div>
+              <div>{{checkMark specsCorrect}} Specs correct</div>
+              <div>{{checkMark noVisibleDamage}} No visible damage</div>
+            </td>
             <td style="color: var(--text-secondary);">{{#if comment}}{{comment}}{{else}}—{{/if}}</td>
           </tr>
           {{/each}}

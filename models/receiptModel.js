@@ -23,6 +23,12 @@ export const ReceiptItem = sequelize.define("ReceiptItem", {
     allowNull: false,
     defaultValue: "ACCEPTED"
   },
+  // Standardized per-item inspection checklist (AS-IS P7). Nullable: NULL means
+  // the check was not recorded (e.g. receipts created before the checklist).
+  qtyMatchesPo: { type: DataTypes.BOOLEAN },
+  packagingIntact: { type: DataTypes.BOOLEAN },
+  specsCorrect: { type: DataTypes.BOOLEAN },
+  noVisibleDamage: { type: DataTypes.BOOLEAN },
   comment: { type: DataTypes.STRING }
 });
 export { sequelize };
