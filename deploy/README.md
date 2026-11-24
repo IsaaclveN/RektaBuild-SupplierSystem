@@ -319,14 +319,14 @@ PM2 fork mode runs `ProcessContainerFork.js` as the entry, so a naive
 see this on an older checkout, update the code (`git pull`) rather than adding a
 wrapper script.
 
-**PM2 daemon inherits IDE or agent environment variables.**
-If PM2 was first started from an editor or agent shell, the daemon can carry
-`ELECTRON_RUN_AS_NODE`, `VSCODE_*`, `WINDSURF_*`, or `NODE_CHANNEL_*` and the app
+**PM2 daemon inherits editor environment variables.**
+If PM2 was first started from an editor-integrated terminal, the daemon can
+carry `ELECTRON_RUN_AS_NODE`, `VSCODE_*`, or `NODE_CHANNEL_*` and the app
 behaves unexpectedly. Reset it:
 
 ```bash
 pm2 kill
-for v in $(compgen -e); do case "$v" in VSCODE_*|WINDSURF_*|ELECTRON_*|ACP_*|DEVIN_*) unset "$v";; esac; done
+for v in $(compgen -e); do case "$v" in VSCODE_*|ELECTRON_*|ACP_*|NODE_CHANNEL_*) unset "$v";; esac; done
 unset NODE_CHANNEL_FD NODE_CHANNEL_SERIALIZATION_MODE
 pm2 start ecosystem.config.cjs --env production
 ```
